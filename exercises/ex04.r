@@ -1,24 +1,36 @@
-install.packages("datasets", "ggplot2")
+# Install the packages needed for the exercise
+install.packages(c("datasets", "ggplot2"))
+
+# Call the packages
 library(datasets)
 library(ggplot2)
 
+# Perform a summary and head in order to have an idea of the dataset
 summary(mtcars)
 head(mtcars)
 
-unique(mtcars$cyl)
-
+# Prepare the box plot, which compares the mpg of the cars with
+# cyl == 4 and with cyl == 6
 boxplot(mtcars$mpg[mtcars$cyl == 4],
         mtcars$mpg[mtcars$cyl == 6],
+        
+        # Eyecandy
         names = c("4 Cylinders", "6 Cylinders"),
         col = c("#DF98A4", "#DFB098"),
         xlab = "Number of cylinders",
         ylab = "Miles per Gallon (mpg)")
 
-mtcars$cyl[mtcars$cyl == 4 | mtcars$cyl == 6]
+# Performing the t-test of the cars' mpg with cyl equal to 4 or 6
+t.test(
+    mtcars$mpg[mtcars$cyl == 4 | mtcars$cyl == 6] ~ 
+    mtcars$cyl[mtcars$cyl == 4 | mtcars$cyl == 6],
+    var.equal=TRUE)
 
-t.test(mtcars$mpg[mtcars$cyl == 4 | mtcars$cyl == 6] ~ mtcars$cyl[mtcars$cyl == 4 | mtcars$cyl == 6], var.equal=TRUE)
 
+# This is a more verbose version of the previous t-test, where the
+# two examined variables are first stored in two separate R variables and
+# then compared with the t-test
 mtcars_mpg_corr <- mtcars$mpg[mtcars$cyl == 4 | mtcars$cyl == 6]
 mtcars_cyl_corr <- mtcars$cyl[mtcars$cyl == 4 | mtcars$cyl == 6]
-t.test(mtcars_mpg_corr ~ mtcars_cyl_corr, var.equal = TRUE)
 
+t.test(mtcars_mpg_corr ~ mtcars_cyl_corr, var.equal = TRUE)
