@@ -30,19 +30,4 @@ t.test(
     var.equal=TRUE)
 
 # Alternative version of the t-test with the pre-stored variables
-# t.test(mtcars_mpg_corr ~ mtcars_cyl_corr, var.equal = TRUE)
-
-hist(mtcars$mpg[mtcars$cyl == 4],
-     xlab="Miles per Gallon (mpg)",
-     main="Histogram of mpg's for cars with 4 cylinders")
-
-hist(mtcars$mpg[mtcars$cyl == 6],
-     xlab="Miles per Gallon (mpg)",
-     main="Histogram of mpg's for cars with 6 cylinders")
-
-median(mtcars$mpg[mtcars$cyl == 4])
-median(mtcars$mpg[mtcars$cyl == 6])
-
-length(mtcars$mpg[mtcars$cyl == 4])
-
-sort(mtcars$mpg[mtcars$cyl == 4])
+t.test(mtcars_mpg_corr ~ mtcars_cyl_corr, var.equal = TRUE)
