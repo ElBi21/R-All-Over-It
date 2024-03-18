@@ -9,10 +9,13 @@ library(ggplot2)
 summary(mtcars)
 head(mtcars)
 
+# Select the cars with cyll == 4 or cyl == 6
+mtcars_mpg_corr <- mtcars$mpg[mtcars$cyl == 4 | mtcars$cyl == 6]
+mtcars_cyl_corr <- mtcars$cyl[mtcars$cyl == 4 | mtcars$cyl == 6]
+
 # Prepare the box plot, which compares the mpg of the cars with
 # cyl == 4 and with cyl == 6
-boxplot(mtcars$mpg[mtcars$cyl == 4],
-        mtcars$mpg[mtcars$cyl == 6],
+boxplot(mtcars_mpg_corr ~ mtcars_cyl_corr,
         
         # Eyecandy
         names = c("4 Cylinders", "6 Cylinders"),
@@ -26,11 +29,20 @@ t.test(
     mtcars$cyl[mtcars$cyl == 4 | mtcars$cyl == 6],
     var.equal=TRUE)
 
+# Alternative version of the t-test with the pre-stored variables
+# t.test(mtcars_mpg_corr ~ mtcars_cyl_corr, var.equal = TRUE)
 
-# This is a more verbose version of the previous t-test, where the
-# two examined variables are first stored in two separate R variables and
-# then compared with the t-test
-mtcars_mpg_corr <- mtcars$mpg[mtcars$cyl == 4 | mtcars$cyl == 6]
-mtcars_cyl_corr <- mtcars$cyl[mtcars$cyl == 4 | mtcars$cyl == 6]
+hist(mtcars$mpg[mtcars$cyl == 4],
+     xlab="Miles per Gallon (mpg)",
+     main="Histogram of mpg's for cars with 4 cylinders")
 
-t.test(mtcars_mpg_corr ~ mtcars_cyl_corr, var.equal = TRUE)
+hist(mtcars$mpg[mtcars$cyl == 6],
+     xlab="Miles per Gallon (mpg)",
+     main="Histogram of mpg's for cars with 6 cylinders")
+
+median(mtcars$mpg[mtcars$cyl == 4])
+median(mtcars$mpg[mtcars$cyl == 6])
+
+length(mtcars$mpg[mtcars$cyl == 4])
+
+sort(mtcars$mpg[mtcars$cyl == 4])
