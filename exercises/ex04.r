@@ -9,7 +9,7 @@ library(ggplot2)
 summary(mtcars)
 head(mtcars)
 
-# Select the cars with cyll == 4 or cyl == 6
+# Select the cars with cyl == 4 or cyl == 6
 mtcars_mpg_corr <- mtcars$mpg[mtcars$cyl == 4 | mtcars$cyl == 6]
 mtcars_cyl_corr <- mtcars$cyl[mtcars$cyl == 4 | mtcars$cyl == 6]
 
