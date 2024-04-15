@@ -1,0 +1,87 @@
+---
+title: "SQL"
+format: pdf
+editor: visual
+---
+
+## SQL with R
+
+First, before starting, we must install and import the necessary libraries:
+
+-   `duckdb`: a SQL database;
+
+-   `dplyr`: a library for data manipulation;
+
+-   `ggplot2`: a library used to plot data.
+
+```{r}
+library(duckdb, quietly = T)
+library(dplyr, quietly = T)
+library(ggplot2, quietly = T)
+```
+
+In order to use `SQL` with `R`, we must use the duckDB server
+
+```{r, connect to db}
+# Create a duckDB server
+con <- dbConnect(duckdb(), dbname = "titanic.db")
+
+# Load the data from the csv file
+data <- read.csv("titanic.csv")
+
+dbWriteTable(con, "passengers", data, row.names = FALSE)
+```
+
+```{r}
+df_adult_pass <- dbGetQuery(con, "SELECT * FROM passengers WHERE age > 18")
+df_adult_pass <- as.data.frame(df_adult_pass)
+df_adult_pass
+```
+
+We can use the `%` operator in R: it can be used to give as input to a statement another statement. The syntax is the following:
+
+```         
+statement_1 %>% statement_2
+```
+
+and it means that `statement_1` will be used as input for `statement_2`. We can now mess a bit with the data, such as filtering the data according to some conditions (in this case, we will put in `filtered` all the people that survived (`Survived == 1`) and that were older than 18 (`Age > 18`).
+
+```{r}
+filtered <- df_adult_pass %>% filter(Survived == 1 & Age > 18)
+filtered
+```
+
+We can also compute other data, such as the mean of the age of the passengers that survived:
+
+```{r}
+mean_of_survivors <- filtered %>%
+    summarize(mean_age = mean(Age, na.rm = TRUE))
+
+mean_of_survivors
+```
+
+We can also plot various statistics of the database;
+
+```{r}
+age_plot <- ggplot(filtered, aes(x = Age)) +
+    geom_histogram(binwidth = 5, fill = "skyblue", color = "black") +
+    labs(title = "Age Distribution of the Survived Passengers whose Age is Greater Than 18",
+         x = "Age",
+         y = "Frequency")
+```
+
+![Result of the plot \\texttt{age_plot}](plots/08_titanic_age_distr.png){fig-align="center"}
+
+```{r}
+class_survival_plot <- ggplot(data, aes(x = factor(Pclass), fill = factor(Survived))) +
+                          geom_bar(position = "dodge", color = "black") +
+                          scale_fill_manual(values = c("red", "green")) +
+                          labs(title = "Survival Rate by Passenger Class",
+                               x = "Passenger Class",
+                               y = "Count",
+                               fill = "Survived")
+```
+
+![Result of the plot \\texttt{class_survival_plot}](plots/08_titanic_classes.png){fig-align="center"}
+
+We can use a
