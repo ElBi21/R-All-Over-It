@@ -1,0 +1,29 @@
+---
+title: "Untitled"
+format: pdf
+editor: visual
+---
+
+## SQL
+
+Initiate connection
+
+```{r}
+library(duckdb)
+library(RPostgreSQL)
+
+driver <- RPostgreSQL::PostgreSQL()
+con <- dbConnect(driver, dbname="dma", host="localhost", port=5432, user="dmauser", password="tED9Zf@skCmPKkP42_rK")
+```
+
+Queries are done with
+
+```{r}
+dbGetQuery(con, "CREATE TABLE Students(
+    Student_ID INT PRIMARY KEY, -- Primary Key mixes UNIQUE and NOT NULL
+    First_Name VARCHAR(128),
+    Last_Name VARCHAR(128),
+    Email VARCHAR(256) UNIQUE,
+    Age INT
+);")
+```
