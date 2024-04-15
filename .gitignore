@@ -1,4 +1,5 @@
 .ipynb_checkpoints
+.idea
 .virtual_documents
 .Rproj.user
 .vscode
@@ -7,6 +8,8 @@
 R-All-Over-It.Rproj
 
 .DS_Store
+database
+05_sql_files
 
 # Temp
 dma.sqlite
