@@ -7,11 +7,8 @@ editor: visual
 ## SQL with R
 
 First, before starting, we must install and import the necessary libraries:
-
 -   `duckdb`: a SQL database;
-
 -   `dplyr`: a library for data manipulation;
-
 -   `ggplot2`: a library used to plot data.
 
 ```{r}
