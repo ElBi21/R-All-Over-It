@@ -1,0 +1,174 @@
+---
+title: "08_clustering"
+format: pdf
+editor: visual
+---
+
+# Segmentation as Clustering and Classification
+
+## 1) Clustering
+
+Clustering is the action of **separating** into **multiple subsets** an enormous **set of data**. In `R` it's possible to do it thanks to some built-in functions. First, let's see the dataset
+
+```{r}
+seg.raw <- read.csv("http://goo.gl/qw303p")
+head(seg.raw)
+```
+
+How many clusters can we have? In the worst case scenario, as many as the points inside the dataset. We have to be more precise and avoid such scenario. Let's try to peak at the density of the `seg.raw$income` variable:
+
+```{r}
+plot(density(seg.raw$income))
+```
+
+We notice two peaks: this tells us that we could possibly have two main clusters. Now, we want to put into the `seg.raw$Segment` variable the label of the cluster. Since the dataset has already such variable, we'll proceed to remove it.
+
+```{r}
+seg.df <- seg.raw[ , -7]     # remove the known "Segment" assignments
+head(seg.df)
+```
+
+In order to better observe the data, we create a simple function which will return the mean values by group. Al lthe qualitative variables will be replaces with `NA`s.
+
+```{r}
+seg.summ <- function(data, groups) {
+  aggregate(data, list(groups), function(x) mean(as.numeric(x)))  
+}
+
+seg.summ(seg.df, seg.raw$Segment)
+```
+
+### → Distances
+
+When we talk about distances with dataset, we usually employ some variations of the **Euclidean distance**. Some other types of distances are the **Manhattan distance** and the **cosine similarity**. Such last one also allows to build networks.
+
+```{r}
+# Example of Euclidean distance:
+sqrt(sum((c(1, 2, 3) - c(2, 3, 2))^2))
+
+# Also can be done with the dist() function
+dist(rbind(c(1, 2, 3), c(2, 3, 2)))
+```
+
+The `dist()` function might not be useful when dealing with datasets that span several orders of magnitude (so datasets that contain millions of data). In that case, the `daisy()` function can be used.
+
+```{r}
+library(cluster)
+seg.dist <- daisy(seg.df)
+as.matrix(seg.dist)[1:4, 1:4]
+```
+
+The dataset has slightly changed. The output should be
+
+```         
+          1         2         3         4
+1 0.0000000 0.2532815 0.2329028 0.2617250
+2 0.2532815 0.0000000 0.0679978 0.4129493
+3 0.2329028 0.0679978 0.0000000 0.4246012
+4 0.2617250 0.4129493 0.4246012 0.0000000
+```
+
+### → Hierarchical clustering
+
+Naturally, when dealing with clusters we might have smaller clusters and larger clusters. It's also possible to try to combine together multiple smaller clusters. That is done via **hierarchical clustering**. That is done with the following function:
+
+```{r}
+seg.hc <- hclust(seg.dist, method="complete")
+```
+
+We can plot the result in a **dendrogram**:
+
+\[PUT THE DENDROGRAM: FIX THE CODE\]
+
+See how it's pretty hard to deduce anything from the dendrogram. We can cut it in half and examine both halves one by one. In order to do so, we specify a cutting height of `0.5`, and then we plot the first lower part with `($lower[[1]])`:
+
+```{r}
+plot(cut(as.dendrogram(seg.hc), h=0.5)$lower[[1]])
+```
+
+We can also compare some branches (may them be near or far from each other) and look at their similarities:
+
+```{r}
+seg.df[c(101, 107), ]   # There is a similarity
+
+seg.df[c(278, 294), ]   # Here also there is a similarity
+
+seg.df[c(173, 141), ]   # Here there is not much of a similarity
+```
+
+### → Cophenetic coefficient
+
+The cophenetic correlation coefficient is a measure of how well the clustering model (expressed in the dendrogram) reflects the distance matrix. A dendrogram is useful and truthful to the data if the correlation between the original distances and the cophenetic coefficients is high. In our case, we have a correlation equal to:
+
+```{r}
+cor(cophenetic(seg.hc), seg.dist)
+```
+
+The tree given from the dendrogram is useful while doing clustering. It's possible to get, from a tree, $K$ groups. In practice, it means to take the first $K$ branches, by starting from the top. We can plot such groups thanks to the `rect.hclust()` function:
+
+```{r}
+plot(seg.hc)
+rect.hclust(seg.hc, k=4, border="red")
+```
+
+Let's see our result: we can plot the 4 clusters that we identified:
+
+```{r}
+seg.hc.segment <- cutree(seg.hc, k=4)     # membership vector for 4 groups
+table(seg.hc.segment)
+seg.summ(seg.df, seg.hc.segment)
+
+plot(jitter(as.numeric(seg.df$gender)) ~ 
+     jitter(as.numeric(seg.df$subscribe)), 
+       col=seg.hc.segment, yaxt="n", xaxt="n", ylab="", xlab="")
+axis(1, at=c(1, 2), labels=c("Subscribe: No", "Subscribe: Yes"))
+axis(2, at=c(1, 2), labels=levels(seg.df$gender))
+```
+
+In this case we are lucky: the clusters are very clear, and we have a good interpretation of the data. But in most (99%) of the cases, we won't be that lucky, and there will be an enormous quantity of noise.
+
+### → K-Means and the centroids
+
+We can find the centroids of the 4 clusters thanks to the K-means algorithm. The 3 main steps are:
+
+1.  Initialize the algorithm, by selecting at random 4 centroids;
+2.  Assign to each item in the dataset a label, depending on the nearest centroids;
+3.  After the assignment step, update the centroids depending on the labelled data;
+4.  Repeat step `2` and `3` until there is convergence (given by the loss function).
+
+```{r}
+seg.df.num <- seg.df
+seg.df.num$gender    <- ifelse(seg.df$gender=="Male", 0, 1)
+seg.df.num$ownHome   <- ifelse(seg.df$ownHome=="ownNo", 0, 1)
+seg.df.num$subscribe <- ifelse(seg.df$subscribe=="subNo", 0, 1)
+head(seg.df.num)
+
+set.seed(96743)        # Because starting assignments are random
+seg.k <- kmeans(seg.df.num, centers=4)  # Try with 4 centers
+
+seg.summ(seg.df, seg.k$cluster)
+
+boxplot(seg.df.num$income ~ seg.k$cluster, 
+        xlab="Income", ylab="Segment", horizontal=TRUE)
+```
+
+```{r}
+clusplot(seg.df, seg.k$cluster, color=TRUE, shade=TRUE, 
+         labels=4, lines=0, main="K-means cluster plot")
+```
+
+## 2) Classification
+
+Clustering is useful when it comes to define if a solution is valid or not, but classification can be helpful when it comes to predict and generalize data. In general, classification is very similar to clustering, in the sense that we try to assign to different groups our data points.
+
+# Project
+
+10 slides in 10 mins, show proper exploration of any dataset at our choice
+
+Provide non-trivial arguments
+
+1.  See dataset
+2.  Stress it and retrieve answer
+3.  Describe the pipeline
+
+Evaluated on creativity and methodology

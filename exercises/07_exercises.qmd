@@ -65,12 +65,9 @@ fert05[order(fert05)]
 By racial composition, what is the proportion of woman working four weeks or less in `1979`?
 
 ```{r}
-fert_women <- fert[, .(total_work = .N), by=c("afam", "hispanic", "other")]
-
-fert_worked <- fert[work >= 4][, .(total_work = .N, work_avr = mean(work)), by=c("afam", "hispanic", "other")]
-
-fert_women
-fert_worked
+#               
+fert06 <- fert[, mean(work >= 4), by=c("afam", "hispanic", "other")]
+fert06
 ```
 
 ## → Exercise 07
