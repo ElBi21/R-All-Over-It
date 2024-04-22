@@ -6,29 +6,31 @@ editor: visual
 
 # Segmentation as Clustering and Classification
 
+Segmentation is, in poor words, the act of **separating** and **finding** groups that would include one or multiple elements of a dataset. There are multiple methods that allow us to accomplish segmentation, such as **clustering** and **classification**.
+
 ## 1) Clustering
 
-Clustering is the action of **separating** into **multiple subsets** an enormous **set of data**. In `R` it's possible to do it thanks to some built-in functions. First, let's see the dataset
+Clustering is the action of **finding groups within** an enormous **set of data**. The problem with clustering is that it's hard to **determine** over which **variables** the data should be clustered, it's hard to **find** the **right number of clusters**, and it's also hard to ensure that the cluster has a valuable meaning. In `R` it's possible to do it thanks to some built-in functions. First, let's see the toy dataset that will be used for explaining what clustering means:
 
 ```{r}
 seg.raw <- read.csv("http://goo.gl/qw303p")
 head(seg.raw)
 ```
 
-How many clusters can we have? In the worst case scenario, as many as the points inside the dataset. We have to be more precise and avoid such scenario. Let's try to peak at the density of the `seg.raw$income` variable:
+How many clusters can we have for a dataset? In the **worst case** scenario, **as many as the points** inside the dataset. We have to be more precise and avoid such scenario. Let's try to peak at the density of the `seg.raw$income` variable, and see if we can get some useful insights for our analysis:
 
 ```{r}
 plot(density(seg.raw$income))
 ```
 
-We notice two peaks: this tells us that we could possibly have two main clusters. Now, we want to put into the `seg.raw$Segment` variable the label of the cluster. Since the dataset has already such variable, we'll proceed to remove it.
+We notice two peaks: this tells us that, if we wanted to cluster the data depending on the `seg.raw$income` variable, then we could possibly have two main clusters. Now, we want to put into the `seg.raw$Segment` variable the "label" of the cluster. Since the dataset has already such variable, we'll proceed to remove it.
 
 ```{r}
 seg.df <- seg.raw[ , -7]     # remove the known "Segment" assignments
 head(seg.df)
 ```
 
-In order to better observe the data, we create a simple function which will return the mean values by group. Al lthe qualitative variables will be replaces with `NA`s.
+In order to better observe the data, we create a simple function which will return the mean values by group. All the qualitative variables will be replaces with `NA`s.
 
 ```{r}
 seg.summ <- function(data, groups) {
