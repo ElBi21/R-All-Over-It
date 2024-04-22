@@ -21,7 +21,7 @@ In order to use `SQL` with `R`, we must use the duckDB server
 con <- dbConnect(duckdb(), dbname = "titanic.db")
 
 # Load the data from the csv file
-data <- read.csv("titanic.csv")
+data <- read.csv("datasets/titanic.csv")
 
 dbWriteTable(con, "passengers", data, row.names = FALSE)
 ```

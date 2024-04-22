@@ -1,0 +1,160 @@
+---
+title: "Untitled"
+format: pdf
+editor: visual
+---
+
+## The `data.table` package
+
+The `data.table` package allows to have a table, similar to the `data.frame` structure, but more powerful. We can load it and use it as follows
+
+```{r}
+library(data.table)
+
+# Create a data table
+table <- data.table(
+    id = c(1, 2, 3, 4, 5),
+    name = c("Jimmy", "Dexter", "Augustus", "Caesar", "Titus"),
+    age = c(29, 45, 26, 37, 41)
+)
+```
+
+### → The basics of `data.table`
+
+Tables can be queried just like a standard `data.frame` :
+
+```{r}
+old <- table[age > 30]
+old
+```
+
+We can also select specific columns from a query with the following syntax:
+
+```{r}
+old_name_id <- old[, .(id, name)]
+old_name_id
+```
+
+Tables can also be sorted, thanks to the `order()` function:
+
+> ``` r
+> data.table[order(column)]
+> ```
+>
+> where:
+>
+> -   `data.table` stands for the table that we want to order;
+>
+> -   `column` is the column based on which the sorting will be applied.
+
+```{r}
+table_sorted <- table[order(age)]
+table_sorted
+```
+
+We can also create an aggregated table:
+
+```{r}
+aggregated <- table[, .(mean_age = mean(age)), by = name]
+aggregated
+```
+
+Of course, we can do that with multiple statistical summaries:
+
+```{r}
+grouped <- table[, .(mean_age = mean(age), max_age = max(age)), by = name]
+grouped
+```
+
+We can also join two different tables, and they will follow the rules of the normal join:
+
+```{r}
+table_plus <- data.table(
+  id = c(2, 4, 6),
+  salary_per_year = c(50000, 60000, 55000)
+)
+
+merged <- table[table_plus, on = "id"]
+merged
+```
+
+Notice how for index `6` there is no value, and we have instead `NA`. This is because we have no record in our original table with id `6`. This reflects how the join works.
+
+On such tables we can also make quick modifications with conditions. Suppose that we want to augment the age of all the people older than `30` by `1`. We can do so with the following syntax:
+
+> ``` r
+> data.table[condition, column_variable := new_definition]
+> ```
+>
+> where:
+>
+> -   `condition` is the condition;
+>
+> -   `column_variable` is the column variable which will be redefined;
+>
+> -   `new_definition` is the new value of the variable for all the selected rows.
+
+```{r}
+#     ↓ condition
+table[age > 30, age := age + 1]
+#               ↑ operation
+table
+```
+
+We can also replace values, such as `NA` or any other value:
+
+```{r}
+table[is.na(age), age := 0]
+table
+```
+
+Naturally, nothing happened because we have no `NA`s on the table.
+
+### → Chaining operations
+
+Operations can be chained, and that is done by adding, inside square brackets, each operation. For instance:
+
+```{r}
+chained <- table[age > 30][, .(mean_age = mean(age)), by = name][mean_age > 40]
+chained
+```
+
+Suppose that we want to add another column and make its value depend on some other values, then we can do it with the following syntax:
+
+```{r}
+table[age > 30, can_vote := "True"]
+table
+```
+
+### → Using `.csv` files
+
+We can import `.csv` files with the `fread()` function:
+
+```{r}
+airports <- fread("datasets/airports.csv")
+```
+
+Let's explore a bit this dataset. We can use the `ncol()` (which will return the number of columns in the dataset) and the `colnames()` (which will return the names of the columns) functions:
+
+```{r}
+ncol(airports)
+colnames(airports)
+```
+
+The `data.table` package also has a file write function, and it's called `fwrite()`. It's sensibly faster than the standard function for writing `.csv`s files, so it's encouraged to use it.
+
+With such dataset, we could also compute the cumulative sum:
+
+```{r}
+cumulative_sum <- airports[, "cum_sum" := cumsum(alt)]
+cumulative_sum
+```
+
+We can also add another column just like when we added the `can_vote` column:
+
+```{r}
+new_airports <- airports[, is_high := ifelse(alt > 2000, "Yes", "No")]
+new_airports
+
+airports
+```

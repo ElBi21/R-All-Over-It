@@ -1,0 +1,78 @@
+---
+title: "07_exercises"
+format: pdf
+editor: visual
+---
+
+## 07 • Exercises
+
+Here are some exercises for the `data.table` package.
+
+## → Exercise 01
+
+Load the `data.table` package. Furtermore (install and) load the `AER` package and run the command `data("Fertility")`, which loads the dataset `Fertility` to your workspace. Turn it into a `data.table` object.
+
+```{r}
+library(data.table)
+library(AER)
+data("Fertility")
+
+fert <- setDT(Fertility)
+fert
+```
+
+## → Exercise 02
+
+Select rows `35` to `50` and print to console its `age` and `work` entry.
+
+```{r}
+colnames(fert)
+
+fert02 <- fert[35:50][, .(age, work)]
+fert02
+```
+
+## → Exercise 03
+
+Select the last row in the dataset and print to console.
+
+```{r}
+fert03 <- fert[nrow(fert)]
+fert03
+```
+
+## → Exercise 04
+
+Count how many women proceeded to have a third child.
+
+```{r}
+fert04 <- fert[morekids == "yes"]
+fert04
+```
+
+## → Exercise 05
+
+There are four possible gender combinations for the first two children. Which is the most common? Use the `by` argument.
+
+```{r}
+fert05 <- fert[, .(total = .N), by=c("gender1", "gender2")]
+fert05[order(fert05)]
+# It's clearly male-male, because it has the higher total amount
+```
+
+## → Exercise 06
+
+By racial composition, what is the proportion of woman working four weeks or less in `1979`?
+
+```{r}
+fert_women <- fert[, .(total_work = .N), by=c("afam", "hispanic", "other")]
+
+fert_worked <- fert[work >= 4][, .(total_work = .N, work_avr = mean(work)), by=c("afam", "hispanic", "other")]
+
+fert_women
+fert_worked
+```
+
+## → Exercise 07
+
+Use `%between%` to get a subset of woman between the age of 22 and 24 and calculate the proportion who had a boy as their firstborn.
